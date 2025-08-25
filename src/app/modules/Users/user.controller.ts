@@ -33,12 +33,13 @@ const createUser = catchAsync(async (req: Request, res: Response) => {
 });
 
 const getAllUser = catchAsync(async (req: Request, res: Response) => {
-  const users = await UserService.getAllUser();
+  const result = await UserService.getAllUser();
   sendResponse(res, {
     statusCode: httpstatuscode.OK,
     success: true,
     message: "Users retrieved successfully",
-    data: users,
+    data: result.data,
+    meta: result.meta,
   });
 });
 

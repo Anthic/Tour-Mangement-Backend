@@ -9,7 +9,7 @@ export enum UserRole {
   GUIDE = "GUIDE",
 }
 export interface IAuthProvider {
-  provider: string; // e.g., 'google', 'facebook', 'local'
+  provider: "google" | "creditals"; // e.g., 'google', 'facebook', 'local'
   providerId: string;
 }
 export enum IsActive {
