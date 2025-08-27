@@ -17,5 +17,6 @@ export const sendResponse = <T>(res: Response, data: TResponse<T>) => {
     message: data.message,
     success: data.success,
     meta: data.meta,
+    data: data.data,
   });
 };

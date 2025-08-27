@@ -1,12 +1,14 @@
+import AppError from "../../errorHelpers/appError";
 import { IAuthProvider, IUser } from "./user.interface";
 import { User } from "./user.model";
 import bycripts from "bcryptjs";
+import httpstatuscode from "http-status-codes";
 const createUser = async (payload: Partial<IUser>) => {
   const { email, password, ...rest } = payload;
 
   const userExists = await User.findOne({ email });
   if (userExists) {
-    throw new Error(" User already exists");
+    throw new AppError("User already exists", httpstatuscode.BAD_REQUEST);
   }
   const hashedPassword = await bycripts.hash(password as string, 10);
 

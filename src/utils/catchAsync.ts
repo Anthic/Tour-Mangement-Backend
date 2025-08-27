@@ -10,7 +10,7 @@ type AsyncFunction = (
 export const catchAsync =
   (fn: AsyncFunction) => (req: Request, res: Response, next: NextFunction) => {
     Promise.resolve(fn(req, res, next)).catch((error) => {
-      console.log("error from user controller", error);
+     
       next(error);
     });
   };
