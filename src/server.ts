@@ -5,6 +5,7 @@ import mongoose from "mongoose";
 import app from "./app";
 
 import { configEnv } from "./config/env";
+import { seedSuperAdmin } from "./utils/seedSuperAdmin";
 let server: Server;
 
 const startServer = async () => {
@@ -19,8 +20,11 @@ const startServer = async () => {
     console.log("Error connecting to MongoDB:", error);
   }
 };
-
-startServer();
+// age supper admin add
+(async () => {
+  await startServer();
+  await seedSuperAdmin();
+})();
 
 //error handling for graceful shutdown
 // Handle graceful shutdown Signals error from server aws/docker etc
