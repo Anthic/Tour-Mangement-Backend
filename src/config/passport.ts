@@ -8,6 +8,50 @@ import { configEnv } from "./env";
 import { User } from "../app/modules/Users/user.model";
 import { UserRole } from "../app/modules/Users/user.interface";
 
+//custom use of passport js
+// import { Strategy as LocalStrategy } from "passport-local";
+// import bycripts from "bcryptjs";
+//local login passport js
+
+// passport.use(
+//   new LocalStrategy(
+//     {
+//       usernameField: "email",
+//       passwordField: "password",
+//     },
+//     async function (email: string, password: string, done) {
+//       try {
+//         const userExists = await User.findOne({ email });
+//         if (!userExists) {
+//           return done(null, false, { message: "User doesn't exist" });
+//         }
+
+//         const isGoogleAuthenticate = userExists.auths.some(
+//           (providerObject) => providerObject.provider == "google"
+//         );
+//         if (isGoogleAuthenticate) {
+//           return done(null, false, {
+//             message:
+//               "You have to authenticate to gooogle login. So if you want to login with credentials ,then at first login with google and the set password and your gmail , then you can login with email and password",
+//           });
+//         }
+//         const isPasswordMatched = await bycripts.compare(
+//           password as string,
+//           userExists.password as string
+//         );
+
+//         if (!isPasswordMatched) {
+//           return done(null, false, { message: "Password doesn't match" });
+//         }
+
+//         return done(null, userExists);
+//       } catch (error) {
+//         return done(error);
+//       }
+//     }
+//   )
+// );
+
 // Serialize user for session storage
 passport.serializeUser((user: Express.User, done) => {
   try {
