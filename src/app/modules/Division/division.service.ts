@@ -4,44 +4,15 @@ import { IDivision } from "./division.interface";
 import { Division } from "./division.models";
 
 const createDivision = async (payload: Partial<IDivision>) => {
-  if (!payload.name) {
-    throw new AppError("Division name is required", httpStatusCode.BAD_REQUEST);
-  }
-  if (!payload.slug && payload.name) {
-    payload.slug = payload.name
-      .toLowerCase()
-      .trim()
-      .replace(/[^\w\s-]/g, "")
-      .replace(/\s+/g, "-")
-      .replace(/-+/g, "-")
-      .replace(/^-+|-+$/g, "");
-  }
-  if (payload.slug === "") {
-    payload.slug = "division";
-  }
-  if (payload.name) {
-    payload.name = payload.name.trim();
-  }
-  if (payload.slug) {
-    payload.slug = payload.slug.toLowerCase().trim();
-  }
-
-  const isDivisionExist = await Division.findOne({
-    $or: [{ name: payload.name }, { slug: payload.slug }],
-  });
-  if (isDivisionExist) {
-    const conflictField =
-      isDivisionExist.name === payload.name ? "name" : "slug";
-    const conflictValue =
-      conflictField === "name" ? payload.name : payload.slug;
+  const existingDivision = await Division.findOne({ name: payload.name });
+  if (existingDivision) {
     throw new AppError(
-      `Division with this ${conflictField} '${conflictValue}' already exists`,
-      httpStatusCode.CONFLICT
+      "A division with this name already exists.",
+      httpStatusCode.BAD_REQUEST
     );
   }
   const division = await Division.create(payload);
 
-  
   return division;
 };
 
