@@ -1,4 +1,3 @@
-
 import httpStatusCode from "http-status-codes";
 import { Request, Response } from "express";
 import { catchAsync } from "../../../utils/catchAsync";
@@ -7,6 +6,14 @@ import { sendResponse } from "../../../utils/sendResponse";
 
 const createTour = catchAsync(async (req: Request, res: Response) => {
   const tour = req.body;
+  
+
+  const files = req.files as Express.Multer.File[];
+  
+  if (files && files.length > 0) {
+ 
+    tour.image = files.map((file) => file.path);
+  }
   const result = await TourService.createTour(tour);
   sendResponse(res, {
     statusCode: httpStatusCode.CREATED,
@@ -17,7 +24,10 @@ const createTour = catchAsync(async (req: Request, res: Response) => {
 });
 
 const getAllTours = catchAsync(async (req: Request, res: Response) => {
-  const getTours = await TourService.getAllTheTours();
+  const query = req.query;
+  const getTours = await TourService.getAllTheTours(
+    query as Record<string, string>
+  );
   sendResponse(res, {
     statusCode: httpStatusCode.OK,
     success: true,
@@ -25,10 +35,27 @@ const getAllTours = catchAsync(async (req: Request, res: Response) => {
     data: getTours,
   });
 });
+const getSingleTourSlug = catchAsync(async (req: Request, res: Response) => {
+  const slug = req.params.slug;
+  const getTours = await TourService.getSingleTourSlug(slug);
+  sendResponse(res, {
+    statusCode: httpStatusCode.OK,
+    success: true,
+    message: "Tours retrieved successfully by slug",
+    data: getTours,
+  });
+});
 
 const updateTour = catchAsync(async (req: Request, res: Response) => {
   const { id } = req.params;
   const payload = req.body;
+
+  const files = req.files as Express.Multer.File[];
+  
+  if (files && files.length > 0) {
+   
+    payload.image = files.map((file) => file.path);
+  }
   const result = await TourService.updateTour(id, payload);
   sendResponse(res, {
     statusCode: httpStatusCode.OK,
@@ -98,6 +125,7 @@ export const TourController = {
   getAllTours,
   updateTour,
   deletTour,
+  getSingleTourSlug
 };
 export const TourTypeController = {
   createTourType,

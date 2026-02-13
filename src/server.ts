@@ -6,6 +6,7 @@ import app from "./app";
 
 import { configEnv } from "./config/env";
 import { seedSuperAdmin } from "./utils/seedSuperAdmin";
+import { connectRedis } from "./config/redis.config";
 let server: Server;
 
 const startServer = async () => {
@@ -22,6 +23,7 @@ const startServer = async () => {
 };
 // age supper admin add
 (async () => {
+  await connectRedis();
   await startServer();
   await seedSuperAdmin();
 })();

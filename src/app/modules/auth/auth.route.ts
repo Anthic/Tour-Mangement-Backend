@@ -8,13 +8,23 @@ const router = Router();
 
 router.post("/login", AuthController.credentialLogin);
 router.post("/refresh-token", AuthController.getNewAccessToken);
+router.post(
+  "/change-password",
+  checkAuth(...Object.values(UserRole)),
+  AuthController.changePassword
+);
+router.post(
+  "/set-password",
+  checkAuth(...Object.values(UserRole)),
+  AuthController.setPassword
+);
 router.post("/logout", AuthController.logout);
 router.post(
   "/reset-password",
   checkAuth(...Object.values(UserRole)),
   AuthController.resetPassword
 );
-
+router.post("/forgot-password", AuthController.forgotPassword);
 router.get(
   "/google",
 

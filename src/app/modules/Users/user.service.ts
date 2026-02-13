@@ -54,7 +54,7 @@ const updateUser = async (
       decodedToken.role === UserRole.USER ||
       decodedToken.role === UserRole.GUIDE
     ) {
-      throw new AppError("You are not authorize", httpstatuscode.FORBIDDEN);
+      throw new AppError("You are not authorized", httpstatuscode.FORBIDDEN);
     }
     if (
       payload.role === UserRole.SUPER_ADMIN &&
@@ -98,8 +98,24 @@ const getAllUser = async () => {
     },
   };
 };
+
+const getMe = async (userId: string) => {
+  const user = await User.findById(userId).select("-password");
+  return {
+    data: user,
+  };
+};
+
+const singleUser = async (id: string) => {
+  const user = await User.findById(id).select("-password");
+  return {
+    data: user,
+  };
+};
 export const UserService = {
   createUser,
   getAllUser,
   updateUser,
+  getMe,
+  singleUser,
 };

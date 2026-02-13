@@ -1,7 +1,11 @@
+/* eslint-disable no-console */
 import httpStatusCode from "http-status-codes";
 import AppError from "../../errorHelpers/appError";
 import { IDivision } from "./division.interface";
 import { Division } from "./division.models";
+import { QueryBuilder } from "../../../utils/queryBuilder";
+import { divisionSearchableFields } from "./division.constant";
+import cloudinary from "../../../config/cloudinary.config";
 
 const createDivision = async (payload: Partial<IDivision>) => {
   const existingDivision = await Division.findOne({ name: payload.name });
@@ -16,17 +20,39 @@ const createDivision = async (payload: Partial<IDivision>) => {
   return division;
 };
 
-const getAllDivisions = async () => {
-  const division = await Division.find({});
-  const countDivision = await Division.countDocuments();
+const getAllDivisions = async (query: Record<string, string>) => {
+  const queryBuilder = new QueryBuilder(Division.find(), query);
+  const divisionData = queryBuilder
+    .search(divisionSearchableFields)
+    .filter()
+    .sort()
+    .fields()
+    .paginate();
+  const [data, meta] = await Promise.all([
+    divisionData.build(),
+    queryBuilder.getMeta(),
+  ]);
   return {
-    data: division,
+    data: data,
     meta: {
-      total: countDivision,
+      total: meta.total,
     },
   };
 };
+const getDivisionBySlug = async (slug: string) => {
+  const division = await Division.findOne({ slug });
 
+  return {
+    data: division,
+  };
+};
+const getDivisionById = async (id: string) => {
+  const division = await Division.findById(id);
+  if (!division) {
+    throw new AppError("This division doesn't exist", httpStatusCode.NOT_FOUND);
+  }
+  return division;
+};
 const updateDivision = async (id: string, payload: Partial<IDivision>) => {
   const exsitinDivision = await Division.findById(id);
   if (!exsitinDivision) {
@@ -43,6 +69,13 @@ const updateDivision = async (id: string, payload: Partial<IDivision>) => {
   if (duplicateName) {
     throw new AppError("The name already exsit", httpStatusCode.BAD_REQUEST);
   }
+  if (payload.thumbnail && exsitinDivision.thumbnailPublicId) {
+    try {
+      await cloudinary.uploader.destroy(exsitinDivision.thumbnailPublicId);
+    } catch (error) {
+      console.error("Failed to delete old thumbnail:", error);
+    }
+  }
 
   const updateDivision = await Division.findByIdAndUpdate(id, payload, {
     new: true,
@@ -52,6 +85,14 @@ const updateDivision = async (id: string, payload: Partial<IDivision>) => {
 };
 
 const deleteDivision = async (id: string) => {
+  const division = await getDivisionById(id);
+  if (division.thumbnailPublicId) {
+    try {
+      await cloudinary.uploader.destroy(division.thumbnailPublicId);
+    } catch (error) {
+      console.error("Failed to delete thumbnail:", error);
+    }
+  }
   await Division.findByIdAndDelete(id);
   return null;
 };
@@ -60,4 +101,6 @@ export const divisionService = {
   getAllDivisions,
   updateDivision,
   deleteDivision,
+  getDivisionBySlug,
+  getDivisionById,
 };

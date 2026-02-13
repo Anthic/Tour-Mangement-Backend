@@ -5,25 +5,43 @@ import { NextFunction, Request, Response } from "express";
 import { configEnv } from "../../config/env";
 import AppError from "../errorHelpers/appError";
 
+interface ErrorResponse {
+  success: boolean;
+  message: string;
+  statusCode: number;
+  errorCode?: string;
+  additionalData?: Record<string, unknown>;
+  stack?: string;
+}
 export const globalErrorHandler = (
   error: any,
   req: Request,
   res: Response,
   next: NextFunction
 ) => {
-  let statuseCode = 500;
-  let message = "something went wrong !!";
+  let statusCode = 500;
+  let message = "Something went wrong!";
+  let errorCode: string | undefined;
+  let additionalData: Record<string, unknown> | undefined;
 
   if (error instanceof AppError) {
-    statuseCode = error.statusCode;
+    statusCode = error.statusCode;
     message = error.message;
-  } else if (error instanceof Error) {
-    statuseCode = 500;
+    errorCode = error.errorCode;
+    additionalData = error.additionalData;
+  }
+  // Handle generic Error instances
+  else if (error instanceof Error) {
+    statusCode = 500;
     message = error.message;
   }
-  res.status(statuseCode).json({
+  const errorResponse: ErrorResponse = {
+    success: false,
     message,
-    error: error.message || "An error occurred",
-    errorStack: configEnv.NODE_ENV === "development" ? error.stack : null,
-  });
+    statusCode,
+    errorCode,
+    additionalData,
+    stack: configEnv.NODE_ENV === "development" ? error.stack : undefined,
+  };
+  res.status(statusCode).json(errorResponse);
 };

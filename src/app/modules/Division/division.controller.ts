@@ -3,8 +3,14 @@ import { catchAsync } from "../../../utils/catchAsync";
 import { divisionService } from "./division.service";
 import { sendResponse } from "../../../utils/sendResponse";
 import httpstatuscode from "http-status-codes";
+import cloudinary from "../../../config/cloudinary.config";
 const createDivision = catchAsync(async (req: Request, res: Response) => {
-  const createNewDivision = await divisionService.createDivision(req.body);
+  const thumbnail = req.file?.path;
+  const divisionData = {
+    ...req.body,
+    thumbnail,
+  };
+  const createNewDivision = await divisionService.createDivision(divisionData);
 
   sendResponse(res, {
     statusCode: httpstatuscode.CREATED,
@@ -15,7 +21,9 @@ const createDivision = catchAsync(async (req: Request, res: Response) => {
 });
 
 const getAllTheDivision = catchAsync(async (req: Request, res: Response) => {
-  const getDivision = await divisionService.getAllDivisions();
+  const getDivision = await divisionService.getAllDivisions(
+    req.query as Record<string, string>
+  );
   sendResponse(res, {
     statusCode: httpstatuscode.OK,
     success: true,
@@ -24,16 +32,43 @@ const getAllTheDivision = catchAsync(async (req: Request, res: Response) => {
     meta: getDivision.meta,
   });
 });
+const getDivisionBySlug = catchAsync(async (req: Request, res: Response) => {
+  const slug = req.params.slug;
+  const getDivision = await divisionService.getDivisionBySlug(slug);
+  sendResponse(res, {
+    statusCode: httpstatuscode.OK,
+    success: true,
+    message: "Division retrieved successfully by slug",
+    data: getDivision.data,
+  });
+});
 
 const updateDivision = catchAsync(async (req: Request, res: Response) => {
   const id = req.params.id;
-  const updateDivisionById = await divisionService.updateDivision(id, req.body);
-    sendResponse(res, {
+  const thumbnail = req.file?.path;
+
+  if (thumbnail) {
+    const existingDivision = await divisionService.getDivisionById(id);
+    if (existingDivision?.thumbnailPublicId) {
+      await cloudinary.uploader.destroy(existingDivision.thumbnailPublicId);
+    }
+  }
+  const updateData = {
+    ...req.body,
+    ...(req.file?.path && {
+      thumbnail: req.file.path,
+      thumbnailPublicId: req.file.filename,
+    }),
+  };
+  const updateDivisionById = await divisionService.updateDivision(
+    id,
+    updateData
+  );
+  sendResponse(res, {
     statusCode: httpstatuscode.OK,
     success: true,
     message: "Division update successfully",
-    data: updateDivisionById
-    
+    data: updateDivisionById,
   });
 });
 
@@ -44,7 +79,7 @@ const deleteDivision = catchAsync(async (req: Request, res: Response) => {
     statusCode: httpstatuscode.OK,
     success: true,
     message: "Division deleted successfully",
-    data: deleteDivisionById
+    data: deleteDivisionById,
   });
 });
 
@@ -52,5 +87,6 @@ export const divisionController = {
   createDivision,
   getAllTheDivision,
   updateDivision,
-  deleteDivision
+  deleteDivision,
+  getDivisionBySlug,
 };

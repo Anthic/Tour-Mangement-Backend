@@ -4,28 +4,23 @@ import { sendResponse } from "../../../utils/sendResponse";
 import httpstatuscode from "http-status-codes";
 import { AuthSerice } from "./auth.service";
 import AppError from "../../errorHelpers/appError";
-import { setAuthToken } from "../../../utils/setAuthToken";
+import { clearAuthToken, setAuthToken } from "../../../utils/setAuthToken";
 import { createUserToken } from "../../../utils/userToken";
 import { configEnv } from "../../../config/env";
+import { JwtPayload } from "jsonwebtoken";
 
 const credentialLogin = catchAsync(async (req: Request, res: Response) => {
   const loginInfo = await AuthSerice.credentialLogin(req.body);
-  // res.cookie("accessToken", loginInfo.accessToken, {
-  //   httpOnly: true,
-  //   secure: false,
-  // });
-  // res.cookie("refreshToken", loginInfo.refreshToken, {
-  //   httpOnly: true,
-  //   secure: false,
-  // });
-  // from the setAuthToken part
 
-  setAuthToken(res, loginInfo);
+  setAuthToken(res, {
+    accessToken: loginInfo.accessToken,
+    refreshToken: loginInfo.refreshToken,
+  });
   sendResponse(res, {
     statusCode: httpstatuscode.OK,
     success: true,
     message: "User Login successfully",
-    data: loginInfo,
+    data: { user: loginInfo.user },
   });
 });
 
@@ -35,25 +30,20 @@ const getNewAccessToken = catchAsync(async (req: Request, res: Response) => {
     throw new AppError("Refresh token doesnt get", httpstatuscode.BAD_REQUEST);
   }
   const tokenInfo = await AuthSerice.getNewAccessToken(refreshToken as string);
+
+  setAuthToken(res, {
+    accessToken: tokenInfo.accessToken,
+  });
   sendResponse(res, {
     statusCode: httpstatuscode.OK,
     success: true,
     message: "Token access successfully",
-    data: tokenInfo,
+    data: null,
   });
 });
 
 const logout = catchAsync(async (req: Request, res: Response) => {
-  res.clearCookie("accessToken", {
-    httpOnly: true,
-    secure: false,
-    sameSite: "lax",
-  });
-  res.clearCookie("refreshToken", {
-    httpOnly: true,
-    secure: false,
-    sameSite: "lax",
-  });
+  clearAuthToken(res);
   sendResponse(res, {
     statusCode: httpstatuscode.OK,
     success: true,
@@ -84,6 +74,51 @@ const resetPassword = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const changePassword = catchAsync(async (req: Request, res: Response) => {
+  const newPassword = req.body.newPassword;
+  const oldPassword = req.body.oldPassword;
+  const decodedToken = req.user;
+
+  await AuthSerice.changePassword(
+    oldPassword,
+    newPassword,
+    decodedToken as JwtPayload
+  );
+
+  sendResponse(res, {
+    success: true,
+    statusCode: httpstatuscode.OK,
+    message: "Password Changed Successfully",
+    data: null,
+  });
+});
+
+const setPassword = catchAsync(async (req: Request, res: Response) => {
+  const decodedToken = req.user as JwtPayload;
+  const { password } = req.body;
+
+  await AuthSerice.setPassword(decodedToken.userId, password);
+
+  sendResponse(res, {
+    success: true,
+    statusCode: httpstatuscode.OK,
+    message: "Password Changed Successfully",
+    data: null,
+  });
+});
+const forgotPassword = catchAsync(async (req: Request, res: Response) => {
+  const { email } = req.body;
+
+  await AuthSerice.forgotPassword(email);
+
+  sendResponse(res, {
+    success: true,
+    statusCode: httpstatuscode.OK,
+    message: "Email Sent Successfully",
+    data: null,
+  });
+});
+
 const googleCallbackController = catchAsync(
   async (req: Request, res: Response) => {
     //redirect code
@@ -92,7 +127,7 @@ const googleCallbackController = catchAsync(
       redirect = redirect.slice(1);
     }
     const user = req.user;
-    console.log(user);
+
     if (!user) {
       throw new AppError("User not found", httpstatuscode.BAD_REQUEST);
     }
@@ -114,4 +149,7 @@ export const AuthController = {
   logout,
   resetPassword,
   googleCallbackController,
+  changePassword,
+  setPassword,
+  forgotPassword,
 };

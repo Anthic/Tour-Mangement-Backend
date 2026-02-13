@@ -1,22 +1,52 @@
 import { z } from "zod";
 
-export const createDivisionZodSchema = z.object({
-  name: z
-    .string()
-    .min(2, "Name must be at least 2 characters")
-    .max(50, "Name too long")
-    .transform((val) => val.trim()),
-  slug: z
-    .string()
-    .regex(
-      /^[a-z0-9-]+$/,
-      "Slug can only contain lowercase letters, numbers, and hyphens"
-    )
-    .optional(),
-  thumbnail: z.string().url("Invalid URL").optional(),
-  discription: z
-    .string()
-    .min(10, "Description too short")
-    .max(500, "Description too long")
-    .optional(),
-});
+//  For create - make schema more forgiving
+export const createDivisionSchema = z
+  .object({
+    name: z
+      .string({
+        required_error: "Division name is required",
+      })
+      .min(2, "Name must be at least 2 characters")
+      .max(50, "Name too long")
+      .transform((val) => val?.trim() || ""),
+    
+    slug: z
+      .string()
+      .regex(/^[a-z0-9-]+$/)
+      .optional(),
+
+    description: z
+      .string()
+      .max(500, "Description cannot exceed 500 characters")
+      .trim()
+      .optional()
+      .or(z.literal(""))
+      .default(""),
+  })
+  .passthrough(); 
+
+// For update - all fields optional
+export const updateDivisionSchema = z
+  .object({
+    name: z
+      .string()
+      .min(2, "Name must be at least 2 characters")
+      .max(50, "Name too long")
+      .transform((val) => val?.trim() || "")
+      .optional(),
+    
+    slug: z
+      .string()
+      .regex(/^[a-z0-9-]+$/)
+      .optional(),
+
+    description: z
+      .string()
+      .max(500, "Description cannot exceed 500 characters")
+      .trim()
+      .optional()
+      .or(z.literal(""))
+      .default(""),
+  })
+  .passthrough();

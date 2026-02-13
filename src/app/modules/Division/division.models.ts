@@ -6,7 +6,14 @@ const divisionSchema = new Schema<IDivision>(
     name: { type: String, required: true, unique: true },
     slug: { type: String, unique: true },
     thumbnail: { type: String },
-    discription: { type: String },
+    thumbnailPublicId: {
+      type: String,
+    },
+       description: { 
+      type: String,
+      maxlength: 500,
+      trim: true
+    },
   },
   {
     timestamps: true,

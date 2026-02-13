@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { checkAuth } from "../../middlewares/checkAuth";
 import { UserRole } from "../Users/user.interface";
-import { validationUser } from "../../middlewares/zodValidate";
+
 import {
   createTourTypeZodSchema,
   createTourZodSchema,
@@ -9,6 +9,8 @@ import {
   updateTourZodSchema,
 } from "./tour.zodvalidation";
 import { TourController, TourTypeController } from "./tour.controller";
+import { uploadTourImages } from "../../middlewares/upload";
+import { validateFormData } from "../../middlewares/zodValidateFormData";
 
 const router = Router();
 
@@ -17,14 +19,19 @@ const router = Router();
 router.post(
   "/create",
   checkAuth(UserRole.ADMIN, UserRole.SUPER_ADMIN),
-  validationUser(createTourZodSchema),
+  uploadTourImages,
+  validateFormData(createTourZodSchema),
   TourController.createTour
 );
 
+router.get("/", TourController.getAllTours);
+
+// ✅ Specific routes MUST come BEFORE wildcard routes
 router.patch(
   "/:id",
   checkAuth(UserRole.ADMIN, UserRole.SUPER_ADMIN),
-  validationUser(updateTourZodSchema),
+  uploadTourImages,
+  validateFormData(updateTourZodSchema),
   TourController.updateTour
 );
 
@@ -33,21 +40,22 @@ router.delete(
   checkAuth(UserRole.ADMIN, UserRole.SUPER_ADMIN),
   TourController.deletTour
 );
-router.get("/", TourController.getAllTours);
 
 /**--------------TOUR TYPES-------------------**/
 
 router.post(
   "/create-tour-type",
   checkAuth(UserRole.ADMIN, UserRole.SUPER_ADMIN),
-  validationUser(createTourTypeZodSchema),
+  validateFormData(createTourTypeZodSchema),
   TourTypeController.createTourType
 );
+
+router.get("/tour-types", TourTypeController.getTourType);
 
 router.patch(
   "/tour-types/:id",
   checkAuth(UserRole.ADMIN, UserRole.SUPER_ADMIN),
-  validationUser(updateTourTypeZodSchema),
+  validateFormData(updateTourTypeZodSchema),
   TourTypeController.updateTourType
 );
 
@@ -57,6 +65,6 @@ router.delete(
   TourTypeController.deletTourType
 );
 
-router.get("/tour-types", TourTypeController.getTourType);
+router.get("/:slug", TourController.getSingleTourSlug);
 
 export const TourRoutes = router;

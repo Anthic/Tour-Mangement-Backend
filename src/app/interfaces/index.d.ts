@@ -7,3 +7,16 @@ declare global {
     }
   }
 }
+export interface ILoginAttemptInfo {
+  remainingAttempts: number;
+  lockedUntil?: Date;
+  requiresCaptcha: boolean;
+}
+export interface IAuthErrorResponse {
+  success: false;
+  message: string;
+  errorCode: string;
+  remainingAttempts?: number;
+  lockedUntil?: Date;
+  requiresCaptcha?: boolean;
+}

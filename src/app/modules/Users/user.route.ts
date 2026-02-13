@@ -18,6 +18,12 @@ router.patch(
   checkAuth(...Object.values(UserRole)),
   UserController.updateUser
 );
+router.get("/me", checkAuth(...Object.values(UserRole)), UserController.getMe);
+router.get(
+  "/:id",
+  checkAuth(UserRole.ADMIN, UserRole.SUPER_ADMIN),
+  UserController.getsingleUser
+);
 router.get(
   "/get-all-users",
   checkAuth(UserRole.ADMIN, UserRole.SUPER_ADMIN),

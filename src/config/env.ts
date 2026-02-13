@@ -18,6 +18,22 @@ interface ConfigEnv {
   GOOGLE_CALL_BACK_URL: string;
   EXPRESS_SESSION_SECRET: string;
   FRONTEND_URL: string;
+  REDIS_HOST: string;
+  REDIS_PORT: string;
+  REDIS_USERNAME: string;
+  REDIS_PASSWORD: string;
+  EMAIL_SENDER: {
+    SMTP_USER: string;
+    SMTP_PASS: string;
+    SMTP_PORT: string;
+    SMTP_HOST: string;
+    SMTP_FROM: string;
+  };
+  CLOUDINARY: {
+    CLOUDINARY_CLOUD_NAME: string;
+    CLOUDINARY_API_KEY: string;
+    CLOUDINARY_API_SECRET: string;
+  };
 }
 const loadEnvVariables = (): ConfigEnv => {
   const requiredEnvVariables: string[] = [
@@ -36,6 +52,18 @@ const loadEnvVariables = (): ConfigEnv => {
     "GOOGLE_CALL_BACK_URL",
     "EXPRESS_SESSION_SECRET",
     "FRONTEND_URL",
+    "REDIS_HOST",
+    "REDIS_PORT",
+    "REDIS_USERNAME",
+    "REDIS_PASSWORD",
+    "SMTP_PASS",
+    "SMTP_PORT",
+    "SMTP_HOST",
+    "SMTP_USER",
+    "SMTP_FROM",
+    "CLOUDINARY_CLOUD_NAME",
+    "CLOUDINARY_API_SECRET",
+    "CLOUDINARY_API_KEY",
   ];
   requiredEnvVariables.forEach((envVar) => {
     if (!process.env[envVar]) {
@@ -60,6 +88,22 @@ const loadEnvVariables = (): ConfigEnv => {
     GOOGLE_CALL_BACK_URL: process.env.GOOGLE_CALL_BACK_URL as string,
     EXPRESS_SESSION_SECRET: process.env.EXPRESS_SESSION_SECRET as string,
     FRONTEND_URL: process.env.FRONTEND_URL as string,
+    REDIS_HOST: process.env.REDIS_HOST as string,
+    REDIS_PORT: process.env.REDIS_PORT as string,
+    REDIS_USERNAME: process.env.REDIS_USERNAME as string,
+    REDIS_PASSWORD: process.env.REDIS_PASSWORD as string,
+    EMAIL_SENDER: {
+      SMTP_USER: process.env.SMTP_USER as string,
+      SMTP_PASS: process.env.SMTP_PASS as string,
+      SMTP_PORT: process.env.SMTP_PORT as string,
+      SMTP_HOST: process.env.SMTP_HOST as string,
+      SMTP_FROM: process.env.SMTP_FROM as string,
+    },
+    CLOUDINARY: {
+      CLOUDINARY_CLOUD_NAME: process.env.CLOUDINARY_CLOUD_NAME as string,
+      CLOUDINARY_API_KEY: process.env.CLOUDINARY_API_KEY as string,
+      CLOUDINARY_API_SECRET: process.env.CLOUDINARY_API_SECRET as string,
+    },
   };
 };
 export const configEnv: ConfigEnv = loadEnvVariables();

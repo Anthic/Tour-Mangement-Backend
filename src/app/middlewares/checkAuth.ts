@@ -9,7 +9,7 @@ import { IsActive } from "../modules/Users/user.interface";
 export const checkAuth = (...authRoles: string[]) => {
   return async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const accessToken = req.headers.authorization;
+      const accessToken = req.cookies.accessToken || req.headers.accessToken;
       if (!accessToken) {
         throw new AppError(
           "Access token required",
